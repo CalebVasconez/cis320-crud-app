@@ -112,7 +112,8 @@ function saveChanges() {
     let regEmail = /^[a-z.]+@+[a-z.]+.+[A-Za-z]{1,3}$/;
     let regPhone = /^[0-9]{1,10}$/;
     let regPhone2 = /^[0-9]+[0-9]+[0-9]+-+[0-9]+[0-9]+[0-9]+-+[0-9]+[0-9]+[0-9]+[0-9]+$/;
-    let regBirthdate = /^[0-12]+[/]+[0-31]+[/]+[0-9]+[0-9]+[0-9]+[0-9]+$/;
+    // let regBirthdate = /^[0-1]+[/]+[0-31]+[/]+[0-9]+[0-9]+[0-9]+[0-9]+$/;
+    let regBirthdate2 = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
 
     if (reg.test(firstName)){
         $('#firstName').removeClass("is-invalid");
@@ -150,7 +151,7 @@ function saveChanges() {
         $('#phoneNumber').removeClass("is-valid");
         $('#phoneNumber').addClass("is-invalid");
     }
-    if (regBirthdate.test(birthdate)){
+    if (regBirthdate2.test(birthdate)){
         $('#birthday').removeClass("is-invalid");
         $('#birthday').addClass("is-valid");
     } else {
@@ -158,6 +159,9 @@ function saveChanges() {
         $('#birthday').removeClass("is-valid");
         $('#birthday').addClass("is-invalid");
     }
+
+    // let dataToServer = { fieldname : firstName, lastName, email ,phone, birthdate };
+    // console.log(dataToServer)
 
 }
 
