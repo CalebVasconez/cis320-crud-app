@@ -66,7 +66,6 @@ public class PersonDAO {
                 person.setEmail(rs.getString("email"));
                 /* FILL IN THE REST HERE */
 
-
                 // Add this person to the list so we can return it.
                 list.add(person);
             }
@@ -87,5 +86,46 @@ public class PersonDAO {
         }
         // Done! Return the results
         return list;
+    }
+
+    public static void addPerson(Person person) {
+        log.log(Level.FINE, "Add people");
+
+        // Declare our variables
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        // Databases are unreliable. Use some exception handling
+        try {
+            // Get our database connection
+            conn = DBHelper.getConnection();
+
+            // This is a string that is our SQL query.
+            // Update for all our fields
+            String sql = "INSERT INTO person (first, last, phone, birthday, email) VALUES (?, ?, ?, ?, ?);";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, person.getFirst());
+            stmt.setString(2, person.getLast());
+            stmt.setString(3, person.getPhone());
+            stmt.setString(4, person.getBirthday());
+            stmt.setString(5, person.getEmail());
+            stmt.executeUpdate();
+
+            // Loop through each record
+
+        } catch (SQLException se) {
+            log.log(Level.SEVERE, "SQL Error", se );
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Error", e );
+        } finally {
+            // Ok, close our result set, statement, and connection
+
+            try { if(stmt != null) stmt.close(); }
+            catch (Exception e) { log.log(Level.SEVERE, "Error", e ); }
+
+            try { if(conn != null) conn.close(); }
+            catch (Exception e) { log.log(Level.SEVERE, "Error", e ); }
+        }
+
     }
 }

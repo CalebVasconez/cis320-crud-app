@@ -4,33 +4,33 @@ function htmlSafe(data) {
     return data.replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;");
 }
 
-// function formatPhoneNumber(phoneNumberString) {
-//     // Strip all non-digits
-//     // Use a regular expression. Match all non-digits \D
-//     // and replace with an empty string.
-//     let cleaned = phoneNumberString.replace(/\D/g, '');
-//
-//     // Are we left with 10 digits? This will return them in
-//     // three groups. This: (\d{3}) grabs the first three digits \d
-//     // The 'match' variable is an array. First is the entire match
-//     // the next locations are each group, which are surrounded by
-//     // () in the parenthesis.
-//     let match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-//     if (match) {
-//         return '(' + match[1] + ') ' + match[2] + '-' + match[3];
-//     }
-//     return phoneNumberString;
-// }
+function formatPhoneNumber(phoneNumberString) {
+    // Strip all non-digits
+    // Use a regular expression. Match all non-digits \D
+    // and replace with an empty string.
+    let cleaned = phoneNumberString.replace(/\D/g, '');
 
-// function getJSDateFromSQLDate(sqlDate) {
-//     // Strip non-digits
-//     let cleaned = sqlDate.replace(/\D/g, '');
-//     // Match and group
-//     let match = cleaned.match(/^(\d{4})(\d{2})(\d{2})$/);
-//     // Create a new Date object
-//     let resultDate = new Date(match[1], match[2], match[3]);
-//     return resultDate;
-// }
+    // Are we left with 10 digits? This will return them in
+    // three groups. This: (\d{3}) grabs the first three digits \d
+    // The 'match' variable is an array. First is the entire match
+    // the next locations are each group, which are surrounded by
+    // () in the parenthesis.
+    let match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+        return match[1] + match[2] + match[3];
+    }
+    return phoneNumberString;
+}
+
+function getJSDateFromSQLDate(sqlDate) {
+    // Strip non-digits
+    let cleaned = sqlDate.replace(/\D/g, '');
+    // Match and group
+    let match = cleaned.match(/^(\d{4})(\d{2})(\d{2})$/);
+    // Create a new Date object
+    let resultDate = new Date(match[1], match[2], match[3]);
+    return resultDate;
+}
 
 function updateTable() {
     // Here's where your code is going to go.
@@ -45,6 +45,7 @@ function updateTable() {
 // Function to call when we are done
 
     $('#datatable td').remove();
+    $('#datatable tbody tr').remove();
     $('#datatable th').remove();
     $('#datatable tbody').append('<tr><th>First Name</th>' +
         '<th>Last Name</th>' +
@@ -101,19 +102,21 @@ addItemButton.on("click", showDialogAdd);
 
 function saveChanges() {
     console.log("Save Changes")
+    let isValid = true;
     let firstName = $('#firstName').val();
     let lastName = $('#lastName').val();
     let email = $('#email').val();
     let phone = $('#phoneNumber').val();
     let birthdate = $('#birthday').val();
 
+    console.log("birthday " + birthdate);
 
     let reg = /^[A-Za-z]{1,20}$/;
     let regEmail = /^[a-z.]+@+[a-z.]+.+[A-Za-z]{1,3}$/;
     let regPhone = /^[0-9]{1,10}$/;
     let regPhone2 = /^[0-9]+[0-9]+[0-9]+-+[0-9]+[0-9]+[0-9]+-+[0-9]+[0-9]+[0-9]+[0-9]+$/;
-    // let regBirthdate = /^[0-1]+[/]+[0-31]+[/]+[0-9]+[0-9]+[0-9]+[0-9]+$/;
-    let regBirthdate2 = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+    let regBirthdate =  /^[0-9]+[0-9]+[0-9]+[0-9]+-+[0-9]+[0-9]+-+[0-9]+[0-9]+$/;
+    let regBirthdate2 = /^[0-1]+[0-9]+[/]+[0-3]+[0-9]+[/]+[0-9]+[0-9]+[0-9]+[0-9]+$/;
 
     if (reg.test(firstName)){
         $('#firstName').removeClass("is-invalid");
@@ -122,6 +125,7 @@ function saveChanges() {
         // This is an INVALID field
         $('#firstName').removeClass("is-valid");
         $('#firstName').addClass("is-invalid");
+        isValid = false;
     }
 
     if (reg.test(lastName)){
@@ -131,6 +135,7 @@ function saveChanges() {
         // This is an INVALID field
         $('#lastName').removeClass("is-valid");
         $('#lastName').addClass("is-invalid");
+        isValid = false;
     }
     if (regEmail.test(email)){
         $('#email').removeClass("is-invalid");
@@ -139,6 +144,7 @@ function saveChanges() {
         // This is an INVALID field
         $('#email').removeClass("is-valid");
         $('#email').addClass("is-invalid");
+        isValid = false;
     }
     if (regPhone.test(phone)){
         $('#phoneNumber').removeClass("is-invalid");
@@ -150,18 +156,43 @@ function saveChanges() {
         // This is an INVALID field
         $('#phoneNumber').removeClass("is-valid");
         $('#phoneNumber').addClass("is-invalid");
+        isValid = false;
     }
     if (regBirthdate2.test(birthdate)){
         $('#birthday').removeClass("is-invalid");
         $('#birthday').addClass("is-valid");
-    } else {
+    } else if (regBirthdate.test(birthdate)){
+        $('#birthday').removeClass("is-invalid");
+        $('#birthday').addClass("is-valid");
+    }
+    else {
         // This is an INVALID field
         $('#birthday').removeClass("is-valid");
         $('#birthday').addClass("is-invalid");
+        isValid = false;
+    }
+    if(isValid){
+        console.log("Valid form");
     }
 
-    // let dataToServer = { fieldname : firstName, lastName, email ,phone, birthdate };
-    // console.log(dataToServer)
+    let my_data = { first : firstName, last : lastName, email : email, phone: formatPhoneNumber(phone), birthday : birthdate};
+    let url = "api/name_list_edit";
+    console.log(my_data);
+
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: JSON.stringify(my_data),
+        success: function(my_data) {
+            console.log(my_data);
+            // call update table
+            updateTable();
+        },
+        contentType: "application/json",
+        dataType: 'text' // Could be JSON or whatever too
+    });
+
+
 
 }
 
