@@ -38,11 +38,13 @@ function updateTable() {
 
     // Define a URL
     let url = "api/name_list_get";
+    // let url2 = "api/name_list_delete";
 
 // Start a web call. Specify:
 // URL
 // Data to pass (nothing in this case)
 // Function to call when we are done
+
 
     $('#datatable td').remove();
     $('#datatable tbody tr').remove();
@@ -52,7 +54,8 @@ function updateTable() {
         '<th>ID</th>' +
         '<th>Email</th>' +
         '<th>Phone</th>' +
-        '<th>Birthdate</th></tr>');
+        '<th>Birthdate</th>' +
+        '<th>Actions</th></tr>');
     $.getJSON(url, null, function(json_result) {
         for (let i = 0; i < json_result.length; i++){
             $('#datatable tbody').append('<tr><td>' +
@@ -67,9 +70,16 @@ function updateTable() {
                                         htmlSafe(json_result[i].phone) +
                                         '</td><td>' +
                                         htmlSafe(json_result[i].birthday) +
+                                        '</td><td>' +
+                                        '<button type=\'button\' name=\'delete\' class=\'deleteButton btn btn-danger\' value=' +
+                                        json_result[i].id + '>' +
+                                        'Delete\n' +
+                                        '</button>\n' +
                                         '</td></tr>');
             console.log(json_result[i].first, json_result[i].last);
         }
+        let buttons = $(".deleteButton");
+        buttons.on("click", deleteItem);
         console.log("Done");
     });
 }
@@ -93,7 +103,12 @@ function showDialogAdd() {
 
     // Show the hidden dialog
     $('#myModal').modal('show');
+
 }
+
+$('#myModal').on('show.bs.modal', function () {
+    $('#firstName').focus();
+});
 
 // There's a button in the form with the ID "addItem"
 // Associate the function showDialogAdd with it.
@@ -136,6 +151,7 @@ function saveChanges() {
         $('#lastName').removeClass("is-valid");
         $('#lastName').addClass("is-invalid");
         isValid = false;
+        $('#firstName').focus();
     }
     if (regEmail.test(email)){
         $('#email').removeClass("is-invalid");
@@ -173,11 +189,15 @@ function saveChanges() {
     }
     if(isValid){
         console.log("Valid form");
+        $('#myModal').modal('hide');
     }
 
     let my_data = { first : firstName, last : lastName, email : email, phone: formatPhoneNumber(phone), birthday : birthdate};
+    // let my_data2 = { id : identification};
     let url = "api/name_list_edit";
+    // let url2 = "api/name_list_delete";
     console.log(my_data);
+    // console.log(my_data2);
 
     $.ajax({
         type: 'POST',
@@ -191,10 +211,34 @@ function saveChanges() {
         contentType: "application/json",
         dataType: 'text' // Could be JSON or whatever too
     });
-
-
-
 }
+
 
 let saveChangesButton = $('#saveChanges');
 saveChangesButton.on("click", saveChanges);
+
+$(document).keydown(function(e) {
+    console.log(e.keyCode);
+    if(e.keyCode == 65 && !$('#myModal').is(':visible')){
+        showDialogAdd();
+    }
+})
+
+function deleteItem(e) {
+    console.log("Delete");
+    console.log(e.target.value);
+    let my_data2 = { id : e.target.value};
+    let url2 = "api/name_list_delete";
+    $.ajax({
+        type: 'POST',
+        url: url2,
+        data: JSON.stringify(my_data2),
+        success: function(my_data2) {
+            console.log(my_data2);
+            // call update table
+            updateTable();
+        },
+        contentType: "application/json",
+        dataType: 'text' // Could be JSON or whatever too
+    });
+}

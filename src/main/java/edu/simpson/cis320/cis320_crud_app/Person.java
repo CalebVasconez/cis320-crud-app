@@ -1,7 +1,7 @@
 package edu.simpson.cis320.cis320_crud_app;
 
 public class Person {
-    private int id;
+    public int id;
     public String first;
     private String last;
     private String phone;
