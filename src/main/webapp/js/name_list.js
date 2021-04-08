@@ -38,14 +38,11 @@ function updateTable() {
 
     // Define a URL
     let url = "api/name_list_get";
-    // let url2 = "api/name_list_delete";
 
-// Start a web call. Specify:
-// URL
-// Data to pass (nothing in this case)
-// Function to call when we are done
-
-
+    // Start a web call. Specify:
+    // URL
+    // Data to pass (nothing in this case)
+    // Function to call when we are done
     $('#datatable td').remove();
     $('#datatable tbody tr').remove();
     $('#datatable th').remove();
@@ -71,15 +68,22 @@ function updateTable() {
                                         '</td><td>' +
                                         htmlSafe(json_result[i].birthday) +
                                         '</td><td>' +
+                                        '<button type=\'button\' name=\'edit\' class=\'editButton btn btn-primary\' value=' +
+                                        json_result[i].id + '>' +
+                                        'Edit\n' +
+                                        '</button>\n' +
                                         '<button type=\'button\' name=\'delete\' class=\'deleteButton btn btn-danger\' value=' +
                                         json_result[i].id + '>' +
                                         'Delete\n' +
                                         '</button>\n' +
                                         '</td></tr>');
-            console.log(json_result[i].first, json_result[i].last);
+            // console.log(json_result[i].first, json_result[i].last);
         }
+        // Buttons for edit and delete
         let buttons = $(".deleteButton");
         buttons.on("click", deleteItem);
+        let buttons1 = $(".editButton");
+        buttons1.on("click", editItem);
         console.log("Done");
     });
 }
@@ -117,15 +121,16 @@ addItemButton.on("click", showDialogAdd);
 
 function saveChanges() {
     console.log("Save Changes")
+    // Call values of fields
     let isValid = true;
+    let identification = $('#id').val();
     let firstName = $('#firstName').val();
     let lastName = $('#lastName').val();
     let email = $('#email').val();
     let phone = $('#phoneNumber').val();
     let birthdate = $('#birthday').val();
 
-    console.log("birthday " + birthdate);
-
+    // Validation regular expression for all fields
     let reg = /^[A-Za-z]{1,20}$/;
     let regEmail = /^[a-z.]+@+[a-z.]+.+[A-Za-z]{1,3}$/;
     let regPhone = /^[0-9]{1,10}$/;
@@ -192,12 +197,12 @@ function saveChanges() {
         $('#myModal').modal('hide');
     }
 
-    let my_data = { first : firstName, last : lastName, email : email, phone: formatPhoneNumber(phone), birthday : birthdate};
-    // let my_data2 = { id : identification};
+    let my_data = {};
+    if (identification == 0){
+        my_data = { first : firstName, last : lastName, email : email, phone: formatPhoneNumber(phone), birthday : birthdate};
+    }
+    else my_data = { id : identification, first : firstName, last : lastName, email : email, phone: formatPhoneNumber(phone), birthday : birthdate};
     let url = "api/name_list_edit";
-    // let url2 = "api/name_list_delete";
-    console.log(my_data);
-    // console.log(my_data2);
 
     $.ajax({
         type: 'POST',
@@ -218,11 +223,58 @@ let saveChangesButton = $('#saveChanges');
 saveChangesButton.on("click", saveChanges);
 
 $(document).keydown(function(e) {
-    console.log(e.keyCode);
+    // console.log(e.keyCode);
     if(e.keyCode == 65 && !$('#myModal').is(':visible')){
         showDialogAdd();
     }
 })
+
+function editItem(e) {
+    console.log("Edit: " + e.target.value);
+
+    // Grab the id from the event
+    let id = e.target.value;
+
+    // This next line is fun.
+    // "e" is the event of the mouse click
+    // "e.target" is what the user clicked on. The button in this case.
+    // "e.target.parentNode" is the node that holds the button. In this case, the table cell.
+    // "e.target.parentNode.parentNode" is the parent of the table cell. In this case, the table row.
+    // "e.target.parentNode.parentNode.querySelectorAll("td")" gets an array of all matching table cells in the row
+    // "e.target.parentNode.parentNode.querySelectorAll("td")[0]" is the first cell. (You can grab cells 0, 1, 2, etc.)
+    // "e.target.parentNode.parentNode.querySelectorAll("td")[0].innerHTML" is content of that cell. Like "Sam" for example.
+    // How did I find this long chain? Just by setting a breakpoint and using the interactive shell in my browser.
+    let first = e.target.parentNode.parentNode.querySelectorAll("td")[0].innerHTML;
+    let last = e.target.parentNode.parentNode.querySelectorAll("td")[1].innerHTML;
+    let email = e.target.parentNode.parentNode.querySelectorAll("td")[3].innerHTML;
+    let phone = e.target.parentNode.parentNode.querySelectorAll("td")[4].innerHTML;
+    let birthday = e.target.parentNode.parentNode.querySelectorAll("td")[5].innerHTML;
+
+    // Parse date to current time in milliseconds
+    let timestamp = Date.parse(birthday);
+    // Made date object out of that time
+    let dateObject = new Date(timestamp);
+    // Convert to a full ISO formatted string
+    let fullDateString = dateObject.toISOString();
+    // Trim off the time part
+    let shortDateString = fullDateString.split('T')[0];
+
+
+    let regexp2 = /(\d{3})(\d{3})(\d{4})/;
+    let match2 = phone.match(regexp2);
+
+    let phoneString = match2[1] + - + match2[2] + - + match2[3]
+
+    $('#id').val(id); // Yes, now we set and use the hidden ID field
+    $('#firstName').val(first);
+    $('#lastName').val(last);
+    $('#email').val(email);
+    $('#phoneNumber').val(phoneString);
+    $('#birthday').val(shortDateString);
+
+// Show the window
+    $('#myModal').modal('show');
+}
 
 function deleteItem(e) {
     console.log("Delete");

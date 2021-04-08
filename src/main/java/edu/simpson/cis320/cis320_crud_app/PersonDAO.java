@@ -38,14 +38,8 @@ public class PersonDAO {
             // Update for all our fields
             String sql = "select id, first, last, phone, birthday, email from person order by id";
 
-            // If you had parameters, it would look something like
-            // String sql = "select id, first, last, phone from person where id = ?";
-
             // Create an object with all the info about our SQL statement to run.
             stmt = conn.prepareStatement(sql);
-
-            // If you had parameters, they would be set wit something like:
-            // stmt.setString(1, "1");
 
             // Execute the SQL and get the results
             rs = stmt.executeQuery();
@@ -65,7 +59,6 @@ public class PersonDAO {
                 person.setPhone(rs.getString("phone"));
                 person.setBirthday(rs.getString("birthday"));
                 person.setEmail(rs.getString("email"));
-                /* FILL IN THE REST HERE */
 
                 // Add this person to the list so we can return it.
                 list.add(person);
@@ -147,6 +140,47 @@ public class PersonDAO {
             String sql = "delete from person where id = ?;";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, person.getId());
+            stmt.executeUpdate();
+
+            // Loop through each record
+
+        } catch (SQLException se) {
+            log.log(Level.SEVERE, "SQL Error", se );
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Error", e );
+        } finally {
+            // Ok, close our result set, statement, and connection
+
+            try { if(stmt != null) stmt.close(); }
+            catch (Exception e) { log.log(Level.SEVERE, "Error", e ); }
+
+            try { if(conn != null) conn.close(); }
+            catch (Exception e) { log.log(Level.SEVERE, "Error", e ); }
+        }
+    }
+
+    public static void editPerson(Person person) {
+        log.log(Level.FINE, "Edit person");
+
+        // Declare our variables
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        // Databases are unreliable. Use some exception handling
+        try {
+            // Get our database connection
+            conn = DBHelper.getConnection();
+
+            // This is a string that is our SQL query.
+            // Update for all our fields
+            String sql = "update person set first=?, last=?, phone=?, birthday=?, email=?  where id=?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, person.getFirst());
+            stmt.setString(2, person.getLast());
+            stmt.setString(3, person.getPhone());
+            stmt.setString(4, person.getBirthday());
+            stmt.setString(5, person.getEmail());
+            stmt.setInt(6, person.getId());
             stmt.executeUpdate();
 
             // Loop through each record

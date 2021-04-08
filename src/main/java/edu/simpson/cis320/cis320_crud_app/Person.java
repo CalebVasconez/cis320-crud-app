@@ -25,7 +25,4 @@ public class Person {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-
-    /* Add additional getters and setters for each field.
-       Just follow the same pattern. */
 }

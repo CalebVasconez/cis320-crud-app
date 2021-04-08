@@ -32,24 +32,16 @@ public class NameListDeleteServlet extends HttpServlet {
 
         // Log the string we got as a request, just as a check
         log.log(Level.INFO, requestString);
-        log.log(Level.INFO, "Object test: "+requestString);
-        out.println("Object test: "+ requestString);
 
         // Great! Now we want to parse the object, and pop it into our business object. Field
         // names have to match. That's the magic.
         Jsonb jsonb = JsonbBuilder.create();
-        log.log(Level.INFO, "Object test: B"+requestString);
         Person id = jsonb.fromJson(requestString, Person.class);
-
-        // Log info as a check
-        log.log(Level.INFO, "Object test: C"+requestString);
 
         // Send something back to the client. Really, we should send a JSON, but
         // we'll keep things simple.
         out.println("Object test: "+id.getId());
 
-
         PersonDAO.deletePerson(id);
-
     }
 }

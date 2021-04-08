@@ -37,7 +37,6 @@ public class NameListEdit extends HttpServlet {
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        log.log(Level.INFO, "Hello World");
 
         // You can output in any format, text/JSON, text/HTML, etc. We'll keep it simple
         response.setContentType("text/plain");
@@ -50,19 +49,10 @@ public class NameListEdit extends HttpServlet {
         for (String line; (line = in.readLine()) != null; requestString += line);
 
         // Log the string we got as a request, just as a check
-        log.log(Level.INFO, requestString);
-
         // Great! Now we want to parse the object, and pop it into our business object. Field
         // names have to match. That's the magic.
         Jsonb jsonb = JsonbBuilder.create();
         Person person = jsonb.fromJson(requestString, Person.class);
-
-        out.println("Object id1: "+person.getId());
-        out.println("Object firstName1: "+person.getFirst());
-        out.println("Object lastName1: "+person.getLast());
-        out.println("Object email1: "+person.getEmail());
-        out.println("Object phone1: "+person.getPhone());
-        out.println("Object birthdate1: "+person.getBirthday());
 
         Matcher fn = firstnameValidationPattern.matcher(person.getFirst());
         Matcher ln = lastnameValidationPattern.matcher(person.getLast());
@@ -71,13 +61,6 @@ public class NameListEdit extends HttpServlet {
         Matcher ph2 = phone2ValidationPattern.matcher(person.getPhone());
         Matcher bd = birthdateValidationPattern.matcher(person.getBirthday());
         Matcher bd2 = birthdate2ValidationPattern.matcher(person.getBirthday());
-
-        out.println("Object id2: "+person.getId());
-        out.println("Object firstName2: "+person.getFirst());
-        out.println("Object lastName2: "+person.getLast());
-        out.println("Object email2: "+person.getEmail());
-        out.println("Object phone2: "+person.getPhone());
-        out.println("Object birthdate2: "+person.getBirthday());
 
         if (!fn.find()) {
             out.println("There is an error with your first name!");
@@ -116,7 +99,9 @@ public class NameListEdit extends HttpServlet {
         out.println("Object phone3: "+person.getPhone());
         out.println("Object birthdate3: "+person.getBirthday());
 
-        PersonDAO.addPerson(person);
-
+        if (person.getId() == 0){
+            PersonDAO.addPerson(person);
+        }
+        else PersonDAO.editPerson(person);
     }
 }
